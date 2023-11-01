@@ -8,13 +8,20 @@ Snake automation CI/CD instrument with fork BuildDSL as a new PyML DSL Python La
 * Generate yaml file from DSL syntax
 
 
-Snake - in future Alternative Terrafrom, Ansible, Jenkins ....
+Snake - in future Alternative Terrafrom, Ansible, Jenkins etc
+
 Snake is simple support yout infrastracture as code
 
 ## Installation and run
 
     $ git clone https://github.com/flykker/snake.git
-    $ cd snake && snake -f ci.pyml
+    $ cd snake
+    $ snake -h
+    $ snake -f ci.pyml
+
+## Run only stage when need
+    $ snake init build -f ci.pyml
+
 
 ## Quickstart
 
