@@ -5,3 +5,5 @@
 /.python-version
 /.kraken/
 .dmypy.json
+__pycache__
+.vscode
