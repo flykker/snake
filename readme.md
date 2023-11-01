@@ -1,6 +1,6 @@
 # Snake
 
-Snake automation CI/CD instrument with fork BuildDSL as a new PyML DSL Language:
+Snake automation CI/CD instrument with fork BuildDSL as a new PyML DSL Python Language:
 
 * Add anonymous function
 * Add try, except
@@ -9,7 +9,7 @@ Snake automation CI/CD instrument with fork BuildDSL as a new PyML DSL Language:
 
 
 Snake - in future Alternative Terrafrom, Ansible, Jenkins ....
-Snake is simple support yout infrastracture
+Snake is simple support yout infrastracture as code
 
 ## Installation and run
 
