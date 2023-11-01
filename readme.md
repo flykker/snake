@@ -55,7 +55,7 @@ Run stage: Deploy
 Deploy
 ```
 
-## Examples generate k8s pod manifest with ENV and Terrafrom Synatx(HCL)
+## Examples dynamic generate k8s pod manifest with ENV and Terrafrom Synatx(HCL)
 
 
 ```py
