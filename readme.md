@@ -1,6 +1,6 @@
 # Snake
 
-Snake automation CI/CD instrument with fork BuildDSL:
+Snake automation CI/CD instrument with fork BuildDSL as a new PyML DSL Language:
 
 * Add anonymous function
 * Add try, except
