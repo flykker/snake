@@ -1,0 +1,97 @@
+include 'k8s'
+
+from yaml_builder import yamlBuilder as yaml
+from textwrap import dedent
+from k8s import lib_a, lib_f, pod
+
+
+def env = {
+  "dev": {
+    "name": "dev",
+    "containerPort": 8888,
+    "replica": 1
+  },
+  "prom": {
+    "name": "prom",
+    "containerPort": 8888,
+    "replica": 3
+  }
+}
+
+def k8s_pod = {
+  apiVersion = "v1"
+  kind = "Pod"
+  
+  metadata {
+    name = "static-web"
+    labels = {"stand": env[stand]['name']}
+  }
+
+  spec {
+    replica = 3
+    containers = [
+      {"name":"nginx","image":"nginx"}
+    ]
+  }
+}
+
+def pipe_cfg = {
+  pipeline {
+    agent = "docker"
+    stages {
+      Build {
+        name = "Build"
+      }
+      Deploy {
+        name = "Deploy"
+      }
+    }
+  }
+}
+
+def k8s_config = {
+    apiVersion = "v1"
+    kind = "ConfigMap"
+    
+    metadata {
+      name = "game-demo"
+    }
+
+    data = {
+      # property-like keys; each key maps to a simple value
+      'player_initial_lives': "3",
+      'ui_properties_file_name': "user-interface.properties",
+
+      # file-like keys
+      'game.properties': dedent("""
+          enemy.types=aliens,monsters
+          player.maximum-lives=5
+      """).lstrip()
+    }
+}
+
+
+def stand = "prom"
+def builder = yaml(env=env[stand])
+def yaml_pod = builder(pod)
+print yaml_pod
+
+pipe {
+  stage "Init" {
+    pip "httpx"
+    use "git"
+
+    print env[stand]
+  }
+
+  stage "Build" {
+    print "CI Build"
+     
+    try:
+      print k8s.lib_C
+    except:
+      print "ERROR!!!"
+
+   }
+}
+

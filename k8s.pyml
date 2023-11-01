@@ -1,0 +1,23 @@
+def lib_a = 555555
+
+def lib_f = {
+    print "Snake Import Library!!!"
+    print lib_a
+}
+
+def pod =  {
+  apiVersion = "v1"
+  kind = "Pod"
+  
+  metadata {
+    name = "static-web"
+    labels = {"stand": env['name']}
+  }
+
+  spec {
+    replica = 3
+    containers = [
+      {"name":"nginx","image":"nginx"}
+    ]
+  }
+}

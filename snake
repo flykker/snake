@@ -1,0 +1,124 @@
+#!/usr/bin/env python3
+
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning) 
+
+from pathlib import Path
+import typing as t
+import argparse
+
+import yaml as pyyaml
+from pprint import pprint
+from mergedeep import merge
+
+from builddsl import Context
+from builddsl.targets import ObjectTarget, mutable_mapping, chain
+    
+
+run_stage = []
+ctx = None
+
+def createParser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('stage', nargs='*', default=None)
+    parser.add_argument('-f', '--file', default='ci.pyml')
+    
+    return parser
+
+def install_and_import(package):
+    import importlib
+    try:
+        importlib.import_module(package)
+    except ImportError:
+        import pip
+        pip.main(['install', package])
+    finally:
+        globals()[package] = importlib.import_module(package)
+
+class Pipe:
+
+  def __init__(self):
+    self.stages = {}
+    # self.env = {}
+
+  def infracloud(self, action, closure=None):
+    #print(action)
+    closure(self)
+
+  def use(self, name):
+    print("Use: ", name)
+
+  def pip(self, package):
+    print("Install and import",package)
+    install_and_import(package)
+
+  def labels(self, *args):
+    print(args)
+
+  def cat(self, func, *args, **kwargs):
+    print("PipeCat!!!")
+    func(self)
+
+  def stage(self, name, closure=None):
+    global run_stage
+    if run_stage != [] and name.lower() in run_stage:
+      print("Run stage: " + name)
+      closure(self)
+    elif run_stage == []:
+      print("Run stage: " + name)
+      closure(self)
+
+  def __call__(self, closure=None, *args, **kwargs):
+    closure(self)
+
+import sys, imp
+from builddsl.transpiler import transpile_to_source, TranspileOptions, transpile_to_ast, transpile_to_source
+from pathlib import Path
+
+
+def include(name):
+  # print("Import: "+name)
+  
+  file = Path(name+'.pyml')
+  
+  targets = mutable_mapping({"pipe":Pipe(), 'include':include})
+    
+  incl_ctx = Context(targets)
+  incl_ctx.module_exec(file.read_text(), name)
+
+  #print(incl_ctx.transpile(file.read_text()))
+  
+      
+class Snake:
+  BUILD_FILE = Path('ci.pyml')
+
+  def __init__(self, project_directory):
+    self.project_directory = project_directory
+
+  def execute_file(self, file=None):
+    
+    parser = createParser()
+    cmd_arg = parser.parse_args()
+
+    try:
+      file = Path(cmd_arg.file)
+      # print(file)
+    except:
+      file = self.BUILD_FILE
+    global run_stage 
+    run_stage=cmd_arg.stage
+
+    # run_context = ObjectTarget(context)
+    # run_context = mutable_mapping({"yaml": yamlBuilder(), "pipe":Pipe()})
+    global ctx
+    run_context = mutable_mapping({"pipe":Pipe(), 'include':include})
+    
+    ctx = Context(run_context)
+    ctx.exec(file.read_text(), str(file))
+    
+    return ctx
+
+#print(Path.cwd())
+snake = Snake(Path.cwd())
+snake.execute_file()
+

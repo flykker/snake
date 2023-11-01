@@ -1,0 +1,17 @@
+import pprint
+
+infracloud = {
+    print('Install Infracloud resource')
+    self(self)
+}
+
+vm_set = {
+    "key":"value",
+    "network": {
+	"ipv4": "10.0.0.1"
+    }
+}
+
+infracloud {
+  pprint.pprint(vm_set)
+}
