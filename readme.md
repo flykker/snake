@@ -58,7 +58,7 @@ Deploy
 ## Examples generate k8s pod manifest
 
 
-```groovy
+```py
 # yaml_builder module in root path project
 from yaml_builder import yamlBuilder as yaml
 
@@ -89,7 +89,8 @@ def pod =  {
 def builder = yaml(env=env[stand])
 def yaml_pod = builder(pod)
 print yaml_pod
-
+```
+```yaml
 # prints:
 apiVersion: v1
 kind: Pod
