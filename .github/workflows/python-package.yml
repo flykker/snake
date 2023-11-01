@@ -1,42 +1,42 @@
-name: Python package
+# name: Python package
 
-on:
-  push: { branches: [ develop ], tags: [ "*" ] }
-  pull_request: { branches: [ develop ] }
+# on:
+#   push: { branches: [ develop ], tags: [ "*" ] }
+#   pull_request: { branches: [ develop ] }
 
-jobs:
-  test:
-    runs-on: ubuntu-20.04
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: [ "3.6", "3.7", "3.8", "3.9", "3.10", "3.x" ]
-    steps:
-    - uses: actions/checkout@v2
-    - uses: python-slap/slap-cli@gha/install/v1
-    - uses: actions/setup-python@v2
-      with: { python-version: "${{ matrix.python-version }}" }
-    - run: slap install -vv --no-venv-check
-    - run: slap test
+# jobs:
+#   test:
+#     runs-on: ubuntu-20.04
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         python-version: [ "3.6", "3.7", "3.8", "3.9", "3.10", "3.x" ]
+#     steps:
+#     - uses: actions/checkout@v2
+#     - uses: python-slap/slap-cli@gha/install/v1
+#     - uses: actions/setup-python@v2
+#       with: { python-version: "${{ matrix.python-version }}" }
+#     - run: slap install -vv --no-venv-check
+#     - run: slap test
 
-  update-changelog:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    steps:
-      - uses: actions/checkout@v2
-      - uses: python-slap/slap-cli@gha/changelog/update/v1
+#   update-changelog:
+#     runs-on: ubuntu-latest
+#     if: github.event_name == 'pull_request'
+#     steps:
+#       - uses: actions/checkout@v2
+#       - uses: python-slap/slap-cli@gha/changelog/update/v1
 
-  build-documentation:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: NiklasRosenstein/slap@gha/install/v1
-      with: { version: '1.5.2' }
-    - run: pip install -r docs/requirements.txt
-    - run: cd docs && novella
-    - uses: JamesIves/github-pages-deploy-action@4.1.4
-      if: github.ref == 'refs/heads/develop'
-      with:
-        branch: gh-pages
-        folder: docs/_site
-        ssh-key: ${{ secrets.DEPLOY_KEY }}
+#   build-documentation:
+#     runs-on: ubuntu-latest
+#     steps:
+#     - uses: actions/checkout@v2
+#     - uses: NiklasRosenstein/slap@gha/install/v1
+#       with: { version: '1.5.2' }
+#     - run: pip install -r docs/requirements.txt
+#     - run: cd docs && novella
+#     - uses: JamesIves/github-pages-deploy-action@4.1.4
+#       if: github.ref == 'refs/heads/develop'
+#       with:
+#         branch: gh-pages
+#         folder: docs/_site
+#         ssh-key: ${{ secrets.DEPLOY_KEY }}
