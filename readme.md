@@ -62,7 +62,7 @@ Run stage: Deploy
 Deploy
 ```
 
-## Examples dynamic generate k8s pod manifest with ENV and Terrafrom Synatx(HCL)
+## Examples dynamic generate k8s pod manifest with ENV and Terrafrom Synatax (HCL)
 
 
 ```py
@@ -110,6 +110,80 @@ spec:
   containers:
   - name: nginx
     image: nginx
+
+```
+
+## Examples how generate ansible-playbook with ENV and Terrafrom Synatax (HCL).And also why not create roles with PyML ...
+
+
+```py
+# yaml_builder module in root path project
+from ansible import ansible
+
+def env = {
+  "dev": {
+    "name": "dev",
+    "containerPort": 8888,
+    "replica": 1,
+    "db_name": "base_dev",
+    "path_name": "/opt/syngx",
+  },
+  "prod": {
+    "name": "prom",
+    "containerPort": 8888,
+    "replica": 3,
+    "db_name": "base_prod",
+    "path_conf": "/opt/syngx"
+  }
+}
+
+def stand = "prod"
+
+def playbook_db = {
+    name = "Example DB"
+    hosts = "db"
+
+    vars {
+      db_name = self.env["db_name"]
+    }
+
+    tasks {
+      task {
+        name = "Install library DB"
+
+        with_items = [
+          "python-pgsql",
+          "python-db",
+        ]
+      }
+
+      task {
+        name = "Update DB"
+      }
+    }
+}
+
+def playbook = ansible(env=env[stand])
+
+# def tasks = playbook([playbook_web,playbook_db])
+def tasks = playbook([playbook_db])
+
+print tasks
+```
+
+```yaml
+# prints:
+---
+- hosts: db
+  name: Example DB
+  vars:
+    db_name: base_prod  
+  tasks:
+  - name: Install library DB
+    with_items:
+    - python-pgsql
+    - python-db
+  - name: Update DB
 
 ```
 

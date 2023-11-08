@@ -1,6 +1,7 @@
 include 'k8s'
 
 from yaml_builder import yamlBuilder as yaml
+from ansible import ansible
 from textwrap import dedent
 from k8s import lib_a, lib_f, pod
 
@@ -9,89 +10,145 @@ def env = {
   "dev": {
     "name": "dev",
     "containerPort": 8888,
-    "replica": 1
+    "replica": 1,
+    "db_name": "base_dev",
+    "path_name": "/opt/syngx",
   },
   "prod": {
     "name": "prom",
     "containerPort": 8888,
-    "replica": 3
+    "replica": 3,
+    "db_name": "base_prod",
+    "path_conf": "/opt/syngx"
   }
 }
 
-def k8s_pod = {
-  apiVersion = "v1"
-  kind = "Pod"
+# def k8s_pod = {
+#   apiVersion = "v1"
+#   kind = "Pod"
   
-  metadata {
-    name = "static-web"
-    labels = {"stand": env[stand]['name']}
-  }
+#   metadata {
+#     name = "static-web"
+#     labels = {"stand": env[stand]['name']}
+#   }
 
-  spec {
-    replica = env[stand]['replica']
-    containers = [
-      {"name":"nginx","image":"nginx"}
-    ]
-  }
-}
+#   spec {
+#     replica = env[stand]['replica']
+#     containers = [
+#       {"name":"nginx","image":"nginx"}
+#     ]
+#   }
+# }
 
-def pipe_cfg = {
-  pipeline {
-    agent = "docker"
-    stages {
-      Build {
-        name = "Build"
-      }
-      Deploy {
-        name = "Deploy"
-      }
-    }
-  }
-}
+# def pipe_cfg = {
+#   pipeline {
+#     agent = "docker"
+#     stages {
+#       Build {
+#         name = "Build"
+#       }
+#       Deploy {
+#         name = "Deploy"
+#       }
+#     }
+#   }
+# }
 
-def k8s_config = {
-    apiVersion = "v1"
-    kind = "ConfigMap"
+# def k8s_config = {
+#     apiVersion = "v1"
+#     kind = "ConfigMap"
     
-    metadata {
-      name = "game-demo"
+#     metadata {
+#       name = "game-demo"
+#     }
+
+#     data = {
+#       # property-like keys; each key maps to a simple value
+#       'player_initial_lives': "3",
+#       'ui_properties_file_name': "user-interface.properties",
+
+#       # file-like keys
+#       'game.properties': dedent("""
+#           enemy.types=aliens,monsters
+#           player.maximum-lives=5
+#       """).lstrip()
+#     }
+# }
+
+def playbook_web = {
+    name = "Example Nginx Playbook"
+    hosts = "nginx"
+
+    vars {
+      path_conf = self.env["path_conf"]
     }
 
-    data = {
-      # property-like keys; each key maps to a simple value
-      'player_initial_lives': "3",
-      'ui_properties_file_name': "user-interface.properties",
+    tasks {
+      task {
+        name = "Install nginx"
+        yum = "name=nginx state=present"
+      }
 
-      # file-like keys
-      'game.properties': dedent("""
-          enemy.types=aliens,monsters
-          player.maximum-lives=5
-      """).lstrip()
+      task {
+        name = "Copy nginx configuration for wordpress"
+        template = "src=default.conf dest=" + self.env['path_conf'] + "/conf.d/default.conf"
+        notify = "restart nginx"
+      }
     }
 }
 
+def playbook_db = {
+    name = "Example DB"
+    hosts = "db"
+
+    vars {
+      db_name = self.env["db_name"]
+    }
+
+    tasks {
+      task {
+        name = "Install library DB"
+
+        with_items = [
+          "python-pgsql",
+          "python-db",
+        ]
+      }
+
+      task {
+        name = "Update DB"
+      }
+    }
+}
 
 def stand = "prod"
 def builder = yaml(env=env[stand])
-def yaml_pod = builder(pod)
-print yaml_pod
+def manifest = builder(pod)
+print manifest
 
-pipe {
-  stage "Init" {
-    pip "httpx"
-    use "git"
+def playbook = ansible(env=env[stand])
 
-    print env[stand]
-  }
+#def tasks = playbook([playbook_web,playbook_db])
+def tasks = playbook([playbook_db])
 
-  stage "Build" {
-    print "CI Build"
+print tasks
+
+# pipe {
+#   stage "Init" {
+#     pip "httpx"
+#     use "git"
+
+#     print env[stand]
+#   }
+
+#   stage "Build" {
+#     print "CI Build"
      
-    try:
-      print k8s.lib_C
-    except:
-      print "ERROR!!!"
+#     try:
+#       print k8s.lib_C
+#     except:
+#       print "ERROR!!!"
 
-   }
-}
+#    }
+# }
 
