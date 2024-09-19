@@ -16,8 +16,8 @@ Snake is simple support yout infrastracture as code
 
     git clone https://github.com/flykker/snake.git
     cd snake && pip3 install -r requirements.txt
-    snake -h
-    snake -f ci.pyml
+    ./snake -h
+    ./snake -f ci.pyml
 
 ## Run only stage when need
     $ snake init build -f ci.pyml
