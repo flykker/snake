@@ -124,31 +124,34 @@ def playbook_db = {
 def stand = "prod"
 def builder = yaml(env=env[stand])
 def manifest = builder(pod)
-print manifest
+# print manifest
 
-def playbook = ansible(env=env[stand])
+# def playbook = ansible(env=env[stand])
 
-#def tasks = playbook([playbook_web,playbook_db])
-def tasks = playbook([playbook_db])
+# #def tasks = playbook([playbook_web,playbook_db])
+# def tasks = playbook([playbook_db])
 
-print tasks
+# print tasks
 
-# pipe {
-#   stage "Init" {
-#     pip "httpx"
-#     use "git"
+pipe {
+  stage "Init" {
+    pip "httpx"
+    
+    sh "git --version"
+    sh "git clone https://gitverse.ru/flykker/snake.git git_snake"
 
-#     print env[stand]
-#   }
+    print env[stand]
+  }
 
-#   stage "Build" {
-#     print "CI Build"
-     
-#     try:
-#       print k8s.lib_C
-#     except:
-#       print "ERROR!!!"
+  stage "Build" {
+    print "CI Build"
 
-#    }
-# }
+  }
+
+  stage "Deploy" {
+    print "Deploy kubernetes"
+
+    # sh "kubectl apply -f ."
+  }
+}
 

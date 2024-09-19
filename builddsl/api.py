@@ -56,9 +56,18 @@ class Context:
         :param code: The code to execute.
         :param filename: The filename of the code. This is used in case errors occur.
         """
-        import sys, imp
+        import sys
 
-        imp_module = imp.new_module(name)
+        try:
+            import imp
+        except:
+            import types
+
+        try:
+            imp_module = imp.new_module(name)
+        except:
+            imp_module = types.ModuleType('name')
+        
         sys.modules[name] = imp_module
 
         ast_module = transpile_to_ast(code, name, self.OPTIONS)

@@ -14,10 +14,10 @@ Snake is simple support yout infrastracture as code
 
 ## Installation and run
 
-    $ git clone https://github.com/flykker/snake.git
-    $ cd snake
-    $ snake -h
-    $ snake -f ci.pyml
+    git clone https://github.com/flykker/snake.git
+    cd snake && pip3 install -r requirements.txt
+    snake -h
+    snake -f ci.pyml
 
 ## Run only stage when need
     $ snake init build -f ci.pyml
@@ -38,16 +38,21 @@ pipe {
   stage "Init" {
     # install modules httpx
     pip "httpx"
-    use "git"
+    
+    sh "git --version"
+    sh "git clone https://gitverse.ru/flykker/snake.git git_snake"
+
     print env[stand]
   }
 
   stage "Build" {
     print "CI Build"
+    # sh "mvn clean package" ...
   }
 
   stage "Deploy" {
     print "Deploy"
+    # sh "kubectl apply -f ." ...
   }
 }
 

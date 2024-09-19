@@ -13,7 +13,7 @@ from mergedeep import merge
 
 from builddsl import Context
 from builddsl.targets import ObjectTarget, mutable_mapping, chain
-    
+import os    
 
 run_stage = []
 ctx = None
@@ -35,8 +35,8 @@ def install_and_import(package):
     finally:
         globals()[package] = importlib.import_module(package)
 
-class Pipe:
 
+class Pipe:
   def __init__(self):
     self.stages = {}
     # self.env = {}
@@ -45,8 +45,9 @@ class Pipe:
     #print(action)
     closure(self)
 
-  def use(self, name):
-    print("Use: ", name)
+  def sh(self, cmd):
+    print("shell: " + cmd)
+    os.system(cmd)
 
   def pip(self, package):
     print("Install and import",package)
@@ -71,7 +72,7 @@ class Pipe:
   def __call__(self, closure=None, *args, **kwargs):
     closure(self)
 
-import sys, imp
+
 from builddsl.transpiler import transpile_to_source, TranspileOptions, transpile_to_ast, transpile_to_source
 from pathlib import Path
 
