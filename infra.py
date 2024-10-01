@@ -11,12 +11,12 @@ class infra:
     params = closure.frame.f_locals['localvars']
     var_di = closure.frame.f_globals['di']
     import requests
-    #endpoint = "https://api.cloud.sberbank.ru/api/v1/servers"
+    
     endpoint = var_di['host'] + '/api/v1/servers'
     
     if params["joindomain"]:
       params["app_params"] = {
-        "joindomain":{"title":"DNS домен","value":"delta.sbrf.ru"}
+        "joindomain":{"title":"DNS домен","value":""}
       }
     del params["joindomain"]
 
@@ -38,4 +38,3 @@ class infra:
     response = requests.post(endpoint, json=data, headers=headers, verify=False)
     print(response.json())
 
-    #print(requests.get(endpoint, headers=headers, verify=False).json())
