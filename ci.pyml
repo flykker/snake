@@ -65,7 +65,6 @@ pipe {
 
   stage "Build" {
     print "CI Build"
-
   }
 
   stage "Deploy" {
