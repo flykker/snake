@@ -154,7 +154,7 @@ plugins {
   use "infra.infra"
 }
 
-def di = {
+def env = {
     "token": os.getenv('DI_PORTAL_TOKEN'),
     "host": "",
     "project_id": "", 
@@ -164,8 +164,8 @@ def di = {
 infra {
     vm "vm" {
       service_name    = "snake_infra_test_vm"
-      group_id        = di["group_id"]
-      project_id      = di["project_id"]
+      group_id        = env["group_id"]
+      project_id      = env["project_id"]
       virtualization  = "openstack"
       ir_group        = "linux"
       ir_type         = "os_linux"

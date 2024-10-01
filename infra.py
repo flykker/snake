@@ -9,10 +9,10 @@ class infra:
     closure(self)
     data = {}
     params = closure.frame.f_locals['localvars']
-    var_di = closure.frame.f_globals['di']
+    var_env = closure.frame.f_globals['env']
     import requests
     
-    endpoint = var_di['host'] + '/api/v1/servers'
+    endpoint = var_env['host'] + '/api/v1/servers'
     
     if params["joindomain"]:
       params["app_params"] = {
@@ -31,7 +31,7 @@ class infra:
     data["server"] = params
     data["count"] = 1
     
-    headers = {"Authorization": var_di['token'], 'Content-Type': 'application/json', 'Accept': 'application/json'}
+    headers = {"Authorization": var_env['token'], 'Content-Type': 'application/json', 'Accept': 'application/json'}
     #headers = {'Accept': 'application/json', 'FROM': 'SwaggerUI'}
     print(data, endpoint, headers)
 
