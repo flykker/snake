@@ -91,7 +91,7 @@ pipe {
     # import kubectl
     kubectl {
 
-      # apply env["manifest"]
+      apply env["manifest"]
     }
   }
 }
