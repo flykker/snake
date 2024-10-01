@@ -11,12 +11,12 @@ def pod =  {
   
   metadata {
     name = "static-web"
+    namespace = "ci03153792-edevgeni-koo-ui-scod"
     labels = {"stand": env['name']}
   }
 
   spec {
-    replica = 3
-    containers = [
+    containers = env['containers'] or [
       {"name":"nginx","image":"nginx"}
     ]
   }

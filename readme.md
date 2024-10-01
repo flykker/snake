@@ -15,9 +15,9 @@ Snake is simple support yout infrastracture as code
 ## Installation and run
 
     git clone https://github.com/flykker/snake.git
-    cd snake && pip3 install -r requirements.txt
-    ./snake -h
-    ./snake -f ci.pyml
+    cd snake && pip3.6 install -r requirements.txt
+    snake -h
+    snake -f ci.pyml
 
 ## Run only stage when need
     $ snake init build -f ci.pyml
@@ -39,20 +39,15 @@ pipe {
     # install modules httpx
     pip "httpx"
     
-    sh "git --version"
-    sh "git clone https://gitverse.ru/flykker/snake.git git_snake"
-
     print env[stand]
   }
 
   stage "Build" {
     print "CI Build"
-    # sh "mvn clean package" ...
   }
 
   stage "Deploy" {
     print "Deploy"
-    # sh "kubectl apply -f ." ...
   }
 }
 
@@ -67,12 +62,16 @@ Run stage: Deploy
 Deploy
 ```
 
-## Examples dynamic generate k8s pod manifest with ENV and Terrafrom Synatax (HCL)
+## Examples Pipeline + dynamic generate k8s pod manifest with ENV and Terrafrom Synatax (HCL)
 
 
 ```py
 # yaml_builder module in root path project
 from yaml_builder import yamlBuilder as yaml
+
+plugins {
+  use "kubectl.kubectl"
+}
 
 def env = {
     "dev": {'name': 'dev', 'containerPort': 8888, 'replica': 1},
@@ -87,21 +86,48 @@ def pod =  {
   
   metadata {
     name = "static-web"
+    namespace = "default"
     labels = {"stand": env['name']}
   }
 
   spec {
-    replica = env['replica']
-    containers = [
+    containers = env['containers'] or [
       {"name":"nginx","image":"nginx"}
     ]
   }
 }
 
-def builder = yaml(env=env[stand])
-def yaml_pod = builder(pod)
-print yaml_pod
+def stand = "prod"
+env["manifest"] = {}
+
+pipe {
+  stage "Init" {
+    pip "kubernetes"
+
+    # sh "git clone https://gitverse.ru/flykker/snake.git git_snake"
+
+    print env[stand]
+  }
+
+  stage "Build manifest" {
+    print "Build manifest"
+    def builder = yaml(env=env[stand])
+    env["manifest"] = builder(pod)
+  }
+
+  stage "Deploy manifest" {
+    
+    # Save manifest to file  and With use console kubectl
+    #sh("kubectl apply --dry-run=client -f kuber.yaml " )
+    
+    # Without use console kubectl only Python Kubernetes API
+    kubectl {
+      apply env["manifest"]
+    }
+  }
+}
 ```
+
 ```yaml
 # prints:
 apiVersion: v1
@@ -111,85 +137,55 @@ metadata:
   labels:
     stand: prod
 spec:
-  replica: 1
   containers:
   - name: nginx
     image: nginx
 
+# Kubectl deploy to k8s + return logout
 ```
 
-## Examples how generate ansible-playbook with ENV and Terrafrom Synatax (HCL).And also why not create roles with PyML ...
+## Examples create VM on infrastracture with Terrafrom Synatax (HCL)
 
 
 ```py
-# yaml_builder module in root path project
-from ansible import ansible
+import os
 
-def env = {
-  "dev": {
-    "name": "dev",
-    "containerPort": 8888,
-    "replica": 1,
-    "db_name": "base_dev",
-    "path_name": "/opt/syngx",
-  },
-  "prod": {
-    "name": "prom",
-    "containerPort": 8888,
-    "replica": 3,
-    "db_name": "base_prod",
-    "path_conf": "/opt/syngx"
-  }
+plugins {
+  use "infra.infra"
 }
 
-def stand = "prod"
-
-def playbook_db = {
-    name = "Example DB"
-    hosts = "db"
-
-    vars {
-      db_name = self.env["db_name"]
-    }
-
-    tasks {
-      task {
-        name = "Install library DB"
-
-        with_items = [
-          "python-pgsql",
-          "python-db",
-        ]
-      }
-
-      task {
-        name = "Update DB"
-      }
-    }
+def di = {
+    "token": os.getenv('DI_PORTAL_TOKEN'),
+    "host": "https://api.cloud.sberbank.ru",
+    "project_id": "f8183651-52ff-405f-aced-b2d9019155a7", 
+    "group_id": "f6bbe751-f298-4c5c-988f-bc1fab76cca4"
 }
 
-def playbook = ansible(env=env[stand])
+infra {
+    di_vm "vm" {
+      service_name    = "snake_infra_test_vm"
+      group_id        = di["group_id"]
+      project_id      = di["project_id"]
+      virtualization  = "openstack"
+      ir_group        = "linux"
+      ir_type         = "os_sberlinux"
+      os_name         = "sberlinux"
+      os_version      = "8.10.0"
+      flavor          = "m1.tiny"
+      volume_size     = 30
+      region          = "skolkovo"
+      zone            = "edz"
+      fault_tolerance = "stand-alone"
+      greenfield      = "false"
+      internet_access = "false"
+      volumes         = []
+      joindomain      = "delta.sbrf.ru"
+    }
 
-# def tasks = playbook([playbook_web,playbook_db])
-def tasks = playbook([playbook_db])
-
-print tasks
-```
-
-```yaml
-# prints:
----
-- hosts: db
-  name: Example DB
-  vars:
-    db_name: base_prod  
-  tasks:
-  - name: Install library DB
-    with_items:
-    - python-pgsql
-    - python-db
-  - name: Update DB
-
+    # postActions {
+        
+    # }
+}
 ```
 
 More examples in path examples

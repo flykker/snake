@@ -1,0 +1,97 @@
+include 'k8s'
+
+from yaml_builder import yamlBuilder as yaml
+from ansible import ansible
+from k8s import lib_a, lib_f, pod
+
+plugins {
+  use "kubectl.kubectl"
+}
+
+def env = {
+  "dev": {
+    "name": "dev",
+    "containerPort": 8888,
+    "replicas": 1,
+    "db_name": "base_dev",
+    "path_name": "/opt/syngx",
+  },
+  "prod": {
+    "name": "prom",
+    "containerPort": 8888,
+    "replicas": 3,
+    "db_name": "base_prod",
+    "path_conf": "/opt/syngx",
+    "containers": {}
+  }
+}
+
+
+# def k8s_pod = {
+#   apiVersion = "v1"
+#   kind = "Pod"
+  
+#   metadata {
+#     name = "static-web"
+#     labels = {"stand": env[stand]['name']}
+#   }
+
+#   spec {
+#     containers = [
+#       {"name":"nginx","image":"nginx"}
+#     ]
+#   }
+# }
+
+# def k8s_config = {
+#     apiVersion = "v1"
+#     kind = "ConfigMap"
+    
+#     metadata {
+#       name = "game-demo"
+#     }
+
+#     data = {
+#       # property-like keys; each key maps to a simple value
+#       'player_initial_lives': "3",
+#       'ui_properties_file_name': "user-interface.properties",
+
+#       # file-like keys
+#       'game.properties': dedent("""
+#           enemy.types=aliens,monsters
+#           player.maximum-lives=5
+#       """).lstrip()
+#     }
+# }
+
+def stand = "prod"
+env["manifest"] = {}
+
+
+pipe {
+  stage "Init" {
+    pip "kubernetes"
+    # sh "env"
+    # sh "git clone https://gitverse.ru/flykker/snake.git git_snake"
+
+    print env[stand]
+  }
+
+  stage "Build manifest" {
+    print "Build manifest"
+    def builder = yaml(env=env[stand])
+    env["manifest"] = builder(pod)
+  }
+
+  stage "Deploy manifest" {
+    
+    #sh "cat kuber.yaml"
+    #sh("kubectl apply --dry-run=client -f kuber.yaml " )
+    
+    # import kubectl
+    kubectl {
+
+      # apply env["manifest"]
+    }
+  }
+}

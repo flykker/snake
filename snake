@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
@@ -13,7 +13,8 @@ from mergedeep import merge
 
 from builddsl import Context
 from builddsl.targets import ObjectTarget, mutable_mapping, chain
-import os    
+import os
+import importlib
 
 run_stage = []
 ctx = None
@@ -26,7 +27,6 @@ def createParser():
     return parser
 
 def install_and_import(package):
-    import importlib
     try:
         importlib.import_module(package)
     except ImportError:
@@ -35,8 +35,25 @@ def install_and_import(package):
     finally:
         globals()[package] = importlib.import_module(package)
 
+class Plugins:
+  def __init__(self):
+    pass
+
+  def use(self, name:str):
+    print("Use plugin: " + name)
+    name_split = name.split('.')
+    import_class = getattr(
+      importlib.import_module("".join(name_split[0:len(name_split)-1])),
+      name_split[len(name_split)-1]
+    )
+    ctx.target._target[name_split[len(name_split)-1].lower()] = import_class()
+
+  def __call__(self, closure=None):
+    self.parent = closure
+    closure(self)
 
 class Pipe:
+
   def __init__(self):
     self.stages = {}
     # self.env = {}
@@ -45,10 +62,13 @@ class Pipe:
     #print(action)
     closure(self)
 
+  def use(self, name):
+    print("Use: ", name)
+
   def sh(self, cmd):
     print("shell: " + cmd)
     os.system(cmd)
-
+  
   def pip(self, package):
     print("Install and import",package)
     install_and_import(package)
@@ -72,7 +92,7 @@ class Pipe:
   def __call__(self, closure=None, *args, **kwargs):
     closure(self)
 
-
+import sys
 from builddsl.transpiler import transpile_to_source, TranspileOptions, transpile_to_ast, transpile_to_source
 from pathlib import Path
 
@@ -112,7 +132,7 @@ class Snake:
     # run_context = ObjectTarget(context)
     # run_context = mutable_mapping({"yaml": yamlBuilder(), "pipe":Pipe()})
     global ctx
-    run_context = mutable_mapping({"pipe":Pipe(), 'include':include})
+    run_context = mutable_mapping({"pipe":Pipe(), 'include': include, 'plugins': Plugins()})
     
     ctx = Context(run_context)
     ctx.exec(file.read_text(), str(file))
