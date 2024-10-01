@@ -156,9 +156,9 @@ plugins {
 
 def di = {
     "token": os.getenv('DI_PORTAL_TOKEN'),
-    "host": "https://api.cloud.sberbank.ru",
-    "project_id": "f8183651-52ff-405f-aced-b2d9019155a7", 
-    "group_id": "f6bbe751-f298-4c5c-988f-bc1fab76cca4"
+    "host": "",
+    "project_id": "", 
+    "group_id": ""
 }
 
 infra {
@@ -168,13 +168,13 @@ infra {
       project_id      = di["project_id"]
       virtualization  = "openstack"
       ir_group        = "linux"
-      ir_type         = "os_sberlinux"
-      os_name         = "sberlinux"
+      ir_type         = "os_linux"
+      os_name         = "linux"
       os_version      = "8.10.0"
       flavor          = "m1.tiny"
       volume_size     = 30
-      region          = "skolkovo"
-      zone            = "edz"
+      region          = ""
+      zone            = ""
       fault_tolerance = "stand-alone"
       greenfield      = "false"
       internet_access = "false"
