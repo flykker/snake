@@ -13,7 +13,7 @@ def di = {
 }
 
 infra {
-    di_vm "vm" {
+    vm "vm" {
       service_name    = "snake_infra_test_vm"
       group_id        = di["group_id"]
       project_id      = di["project_id"]

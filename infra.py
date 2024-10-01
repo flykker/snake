@@ -5,7 +5,7 @@ class infra:
   def __call__(self, closure=None, **kwargs):
     closure(self)
 
-  def di_vm(self, name, closure=None):
+  def vm(self, name, closure=None):
     closure(self)
     data = {}
     params = closure.frame.f_locals['localvars']

@@ -162,7 +162,7 @@ def di = {
 }
 
 infra {
-    di_vm "vm" {
+    vm "vm" {
       service_name    = "snake_infra_test_vm"
       group_id        = di["group_id"]
       project_id      = di["project_id"]
@@ -170,7 +170,7 @@ infra {
       ir_group        = "linux"
       ir_type         = "os_linux"
       os_name         = "linux"
-      os_version      = "8.10.0"
+      os_version      = ""
       flavor          = "m1.tiny"
       volume_size     = 30
       region          = ""
@@ -179,7 +179,7 @@ infra {
       greenfield      = "false"
       internet_access = "false"
       volumes         = []
-      joindomain      = "delta.sbrf.ru"
+      joindomain      = ""
     }
 
     # postActions {
