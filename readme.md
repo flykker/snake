@@ -6,6 +6,7 @@ Snake automation CI/CD instrument with fork BuildDSL as a new PyML DSL Python La
 * Add try, except
 * Add import pyml modules
 * Generate yaml file from DSL syntax
+* Add Plugins
 
 
 Snake - in future Alternative Terrafrom, Ansible, Jenkins etc
@@ -17,10 +18,10 @@ Snake is simple support yout infrastracture as code
     git clone https://github.com/flykker/snake.git
     cd snake && pip3.6 install -r requirements.txt
     snake -h
-    snake -f ci.pyml
+    snake -f examples/ci.pyml
 
 ## Run only stage when need
-    $ snake init build -f ci.pyml
+    $ snake init build -f examples/ci.pyml
 
 
 ## Quickstart
@@ -185,6 +186,48 @@ infra {
     # postActions {
         
     # }
+}
+```
+
+## Examples run ssh + vault plugins - alternative Ansible
+
+
+```py
+# Example run 
+#
+# ./snake -f examples/ansible.pyml -v VAULT_SECRETID=12345 SSH_USERNAME=user SSH_PASSWORD=pass
+
+plugins {
+    use "plugins.SSH"
+    use "plugins.Vault"
+}
+
+def paramSecman = {
+    "url": "http://localhost:8200/",
+    "namespace": "CREDS",
+    "role_id": "5a1136ec-be56-8567-7732-8c82c4c83f31"
+}
+def checks = {
+    "CPU": {"threshold":1,"command":"grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage}'"},
+    "MEM":{"threshold":70,"command":"free | grep Mem | awk '{print $3/$2 * 100.0}'"},
+    "HDD":{"threshold":40,"command":"df -h / | awk '{print $5}'| sed '2!d' | sed 's/%//'"},
+}
+
+pipe {
+    vault paramSecman {
+        print "Secman"
+        data = kv(mount_point: "A/DPMPARSER/APP/SEC/KV", path: "SSH")
+        ssh {"hostname": "localhost", "username": data["username"], "pkey": data["pkey"]} {
+
+            for check,value in checks.items():
+                stage "Check "+check {
+                    def currentValue=run(value["command"])
+                    currentValue=currentValue["stdout"].replace("\n","")
+                    if float(currentValue)>=float(value["threshold"]):
+                        print("Error !!! "+check+"="+currentValue+"% and this value more than threshold="+str(value["threshold"])+"%")
+                }
+        }
+    }
 }
 ```
 

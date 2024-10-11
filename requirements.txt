@@ -6,3 +6,5 @@ ruamel.yaml==0.18.6
 ruamel.yaml.clib==0.2.8
 typing_extensions==4.12.2
 requests==2.32.3
+hvac==2.3.0
+parallel-ssh==2.12.0

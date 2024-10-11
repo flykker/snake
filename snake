@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
@@ -23,7 +24,8 @@ def createParser():
     parser = argparse.ArgumentParser()
     parser.add_argument('stage', nargs='*', default=None)
     parser.add_argument('-f', '--file', default='ci.pyml')
-    
+    parser.add_argument('-v', '--values', type=str, nargs='+', default=[])
+
     return parser
 
 def install_and_import(package):
@@ -116,6 +118,14 @@ class Snake:
   def __init__(self, project_directory):
     self.project_directory = project_directory
 
+  def _list_values(self, values: list[str]):
+    values_dict = {}
+    for i in values:
+      val = i.split('=')
+      values_dict[val[0]] = val[1]
+
+    return values_dict
+
   def execute_file(self, file=None):
     
     parser = createParser()
@@ -131,9 +141,10 @@ class Snake:
 
     # run_context = ObjectTarget(context)
     # run_context = mutable_mapping({"yaml": yamlBuilder(), "pipe":Pipe()})
+    values = self._list_values(cmd_arg.values)
     global ctx
-    run_context = mutable_mapping({"pipe":Pipe(), 'include': include, 'plugins': Plugins()})
-    
+
+    run_context = mutable_mapping({"pipe":Pipe(), "plugins": Plugins(), 'include':include, 'values': values})
     ctx = Context(run_context)
     ctx.exec(file.read_text(), str(file))
     

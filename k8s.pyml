@@ -11,7 +11,7 @@ def pod =  {
   
   metadata {
     name = "static-web"
-    namespace = "ci03153792-edevgeni-koo-ui-scod"
+    namespace = "default"
     labels = {"stand": env['name']}
   }
 
