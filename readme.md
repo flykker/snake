@@ -230,6 +230,7 @@ pipe {
     }
 }
 ```
+## Examples alternative pkg manager Helm deploy, rollback, delete manifest apps
 
 ```py
 # Example run alternative Helm deploy with PYML and k8s Python Native client
