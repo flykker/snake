@@ -1,8 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
+import urllib3
+urllib3.disable_warnings()
 
 from pathlib import Path
 import typing as t
@@ -24,8 +23,7 @@ def createParser():
     parser = argparse.ArgumentParser()
     parser.add_argument('stage', nargs='*', default=None)
     parser.add_argument('-f', '--file', default='ci.pyml')
-    parser.add_argument('-v', '--values', type=str, nargs='+', default=[])
-
+    
     return parser
 
 def install_and_import(package):
@@ -92,7 +90,10 @@ class Pipe:
       closure(self)
 
   def __call__(self, closure=None, *args, **kwargs):
-    closure(self)
+    if type(closure).__name__ == 'dict':
+      print("Pipe is empty - add stages")
+    else:
+      closure(self)
 
 import sys
 from builddsl.transpiler import transpile_to_source, TranspileOptions, transpile_to_ast, transpile_to_source
@@ -118,14 +119,6 @@ class Snake:
   def __init__(self, project_directory):
     self.project_directory = project_directory
 
-  def _list_values(self, values: list[str]):
-    values_dict = {}
-    for i in values:
-      val = i.split('=')
-      values_dict[val[0]] = val[1]
-
-    return values_dict
-
   def execute_file(self, file=None):
     
     parser = createParser()
@@ -141,10 +134,9 @@ class Snake:
 
     # run_context = ObjectTarget(context)
     # run_context = mutable_mapping({"yaml": yamlBuilder(), "pipe":Pipe()})
-    values = self._list_values(cmd_arg.values)
     global ctx
-
-    run_context = mutable_mapping({"pipe":Pipe(), "plugins": Plugins(), 'include':include, 'values': values})
+    run_context = mutable_mapping({"pipe":Pipe(), 'include': include, 'plugins': Plugins()})
+    
     ctx = Context(run_context)
     ctx.exec(file.read_text(), str(file))
     
@@ -153,4 +145,3 @@ class Snake:
 #print(Path.cwd())
 snake = Snake(Path.cwd())
 snake.execute_file()
-

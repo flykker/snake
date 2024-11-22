@@ -1,0 +1,27 @@
+
+def configmap = {
+    apiVersion = "v1"
+    kind = "ConfigMap"
+    
+    metadata {
+      name = "static-web-new"
+      namespace = "ci03153792-edevgeni-koo-ui-scod"
+      labels = {"stand": env['name']}
+    }
+
+    data = {
+      # property-like keys; each key maps to a simple value
+      'player_initial_lives': "3",
+      'ui_properties_file_name': "user-interface.properties",
+      'name': 'test-app-new'
+
+      # # file-like keys
+      # 'game.properties': dedent("""
+      #     enemy.types=aliens,monsters
+      #     player.maximum-lives=5
+      # """).lstrip()
+    }
+}
+
+def __all__ = [configmap]
+

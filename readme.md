@@ -231,5 +231,95 @@ pipe {
 }
 ```
 
+```py
+# Example run alternative Helm deploy with PYML and k8s Python Native client
+# This file pkg.pyml settings for deploy k8s, exclude from render manifest
+# 
+# Workflow:
+# ./snake delpoy -f kubepkg/pkg.pyml  - Update cluster  and create first version for rollback
+#
+# Make change in configmap directory kubepkg/cm.pyml
+# ./snake deploy -f kubepkg/pkg.pyml - Update cluster and create second version for rollback
+# ./snake rollback -f kubepkg/pkg.pyml - Rollback cluster and update manifest from last version deploy
+# ./snake delete -f kubepkg/pkg.pyml - Delete all resources cluster creates manifest from last version deploy
+
+import sys
+
+plugins {
+  use "kubepkg.kubepkg"
+}
+
+def env = {
+  "dev": {
+    "name": "dev",
+    "containerPort": 8888,
+    "replicas": 1,
+    "db_name": "base_dev",
+    "path_name": "/opt/syngx",
+  },
+  "prod": {
+    "name": "prom",
+    "containerPort": 8888,
+    "replicas": 3,
+    "db_name": "base_prod",
+    "path_conf": "/opt/syngx",
+    "containers": {},
+    "pods": ["test","test-1"]
+  }
+}
+
+def stand = "prod"
+def ns = ""
+def token = ""
+
+pipe {
+  stage "init" {
+    print env[stand]
+  }
+
+  stage "deploy" {
+    kubepkg {
+      print "Install"
+      
+      name = "test-app"
+      
+      login "https://api.SERVER:6443", ns, token
+      update name, "kubepkg/", env[stand]
+    }
+  }
+
+  stage "rollback" {
+    kubepkg {
+      
+      if sys.argv[1] == 'rollback':
+        print("Rollback")
+
+        name = "test-app"
+        
+        version = None
+        if 'version' in sys.argv[2]:
+          version = int(sys.argv[2].split('version=')[-1])
+        
+        login "local"
+        rollback name, version
+      else:
+        print("SKIP")
+    }
+  }
+
+  stage "delete" {
+    kubepkg {
+      if sys.argv[1] == 'delete':
+        print("Delete")
+        name = "test-app"
+        login "local"
+        delete name
+      else:
+        print("SKIP")
+    }
+  }
+}
+```
+
 More examples in path examples
 

@@ -1,0 +1,26 @@
+def __all__ = []
+
+def helper_gen(env, it):
+  def pod = {
+    apiVersion = "v1"
+    kind = "Pod"
+    
+    metadata {
+      name = "static-web-" + it
+      namespace = "ci03153792-edevgeni-koo-ui-scod"
+      labels = {"stand": it}
+    }
+
+    spec {
+      containers = env['containers'] or [
+        {"name":"nginx","image":"nginx"}
+      ]
+    }
+  }
+
+  return pod
+
+for it in env['pods']:
+  __all__.append(
+    helper_gen(env, it)
+  )
