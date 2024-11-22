@@ -236,7 +236,7 @@ pipe {
 # This file pkg.pyml settings for deploy k8s, exclude from render manifest
 # 
 # Workflow:
-# ./snake delpoy -f kubepkg/pkg.pyml  - Update cluster  and create first version for rollback
+# ./snake deploy -f kubepkg/pkg.pyml  - Update cluster  and create first version for rollback
 #
 # Make change in configmap directory kubepkg/cm.pyml
 # ./snake deploy -f kubepkg/pkg.pyml - Update cluster and create second version for rollback
