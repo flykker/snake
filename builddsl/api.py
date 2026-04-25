@@ -49,42 +49,33 @@ class Context:
         scope[self.OPTIONS.closure_target] = ClosureState(None, None, self.target, self.target_factory)
         exec(compile(module, str(filename), "exec"), scope)
 
-    def module_exec(self, code: str, name) -> None:
+    def module_exec(self, code: str, name: str) -> None:
         """
-        Execute a piece of BuildDSL code.
+        Execute BuildDSL code as a module.
 
         :param code: The code to execute.
-        :param filename: The filename of the code. This is used in case errors occur.
+        :param name: The module name.
         """
-        import sys, importlib
-        
-        try:
-            import imp
-        except:
-            import types
+        import sys
+        import types
 
-        try:
-            imp_module = imp.new_module(name)
-        except:
-            imp_module = types.ModuleType('name')
-        sys.modules[name] = imp_module
+        # Create module if it doesn't exist
+        if name not in sys.modules:
+            imp_module = types.ModuleType(name)
+            sys.modules[name] = imp_module
+        else:
+            imp_module = sys.modules[name]
 
+        # Transpile and compile
         ast_module = transpile_to_ast(code, name, self.OPTIONS)
         
+        # Setup closure state
         assert self.OPTIONS.closure_target is not None
-        self.scope[self.OPTIONS.closure_target] = ClosureState(None, None, self.target, self.target_factory)
-
-        setattr(
-            imp_module, 
-            self.OPTIONS.closure_target, 
-            ClosureState(None, None, self.target, self.target_factory)
-        )
-        exec(compile(ast_module, name, "exec"), imp_module.__dict__)
+        closure_state = ClosureState(None, None, self.target, self.target_factory)
+        setattr(imp_module, self.OPTIONS.closure_target, closure_state)
         
-        import importlib
-    
-        importlib.import_module(name)
-        globals()[name] = importlib.import_module(name)
+        # Execute in module namespace
+        exec(compile(ast_module, name, "exec"), imp_module.__dict__)
         
         
         
