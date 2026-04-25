@@ -6,8 +6,10 @@ depth = 0
 
 
 def debug_trace(func: T_Callable) -> T_Callable:
+    """Decorator for debugging function calls with indentation. Currently disabled."""
     return func
 
+    # Debug code is currently disabled - remove this return to enable
     @functools.wraps(func)  # type: ignore[unreachable]
     def wrapper(*a, **kw):
         global depth

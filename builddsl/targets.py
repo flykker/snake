@@ -84,6 +84,7 @@ class ObjectTarget(Target):
 class MutableMappingTarget(Target):
     """
     Delegates dynamic name resolution to a mapping.
+    Allows setting new keys that don't exist yet (unlike the original implementation).
     """
 
     def __init__(self, target: MutableMapping[str, Any], description: "str | None" = None) -> None:
@@ -105,10 +106,8 @@ class MutableMappingTarget(Target):
         raise self._error(key)
 
     def __setitem__(self, key: str, value: Any) -> None:
-        if key in self._target:
-            self._target[key] = value
-        else:
-            raise self._error(key)
+        # Allow setting new keys (more flexible than original)
+        self._target[key] = value
 
     def __delitem__(self, key: str) -> None:
         if key in self._target:

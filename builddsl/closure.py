@@ -101,33 +101,44 @@ class ClosureState(Target):
         return self._target.get() if self._target is not None else None
 
     def __anon__func__(self, func, *args, **kwargs):
-     
-        if hasattr(func.frame.f_locals['self'], '__anon__func__'):
-            func.frame.f_locals['self'].__anon__func__(func, func_name=self.__anon__func___name)
+        """Handle anonymous function calls for method-like syntax."""
+        if hasattr(func, 'frame') and 'self' in func.frame.f_locals:
+            if hasattr(func.frame.f_locals['self'], '__anon__func__'):
+                func.frame.f_locals['self'].__anon__func__(func, func_name=self.__anon__func___name)
+            else:
+                func(self)
         else:
+            # If no 'self' in frame, just call the function directly
             func(self)
         self.__anon__func___name = None
 
     def __getitem__(self, key: str) -> Any:
+        # Check frame locals first (for local variables in closures)
         frame = self._frame
         if frame and key in frame.f_locals:
             return frame.f_locals[key]
+        
+        # Check target
         if self._target is not None:
             try:
                 return self._target[key]
             except NameError:
                 pass
+        
+        # Check parent closure chain
         if self._parent is not None:
             try:
                 return self._parent[key]
             except NameError:
                 pass
+        
+        # Fall back to builtins
         if hasattr(builtins, key):
             return getattr(builtins, key)
 
+        # Handle anonymous function calls
         self.__anon__func___name = key
         return self.__anon__func__
-        # raise NameError(f"{key!r} in {self!r}")
 
     def __setitem__(self, key: str, value: Any) -> None:
         frame = self._frame

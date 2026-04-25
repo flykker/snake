@@ -26,12 +26,13 @@ def createParser():
     
     return parser
 
-def install_and_import(package):
+def install_and_import(package: str) -> None:
+    """Install and import a package dynamically."""
     try:
         importlib.import_module(package)
     except ImportError:
-        import pip
-        pip.main(['install', package])
+        import subprocess
+        subprocess.check_call([sys.executable, "-m", "pip", "install", package])
     finally:
         globals()[package] = importlib.import_module(package)
 
